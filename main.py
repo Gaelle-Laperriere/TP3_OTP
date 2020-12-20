@@ -20,9 +20,9 @@ def generate(directory):
 def send(directory, text):
     ''' (String, String) -> NoneType '''
     # Get all information needed
-    path = get_first_available_pad(directory)
+    path = get_first_available_pad_set(directory)
     if path == '':
-        print('There is no available pad in the directory "' + directory + '"')
+        print('There is no available pad set in the directory "' + directory + '"')
         exit()
     text_encrypted = encrypt_message(text,path + 'c')
     prefix = read_file(path + 'p')
@@ -43,7 +43,7 @@ def receive(directory, filename):
     text_encrypted = content[384:-384]
     suffix = content[-384:]
     # Decrypt message
-    path = get_pad(directory, prefix, suffix)
+    path = get_pad_set(directory, prefix, suffix)
     pad = read_pad(path + 'c')
     text_decrypted = decrypt_message(text_encrypted, pad)
     print(text_decrypted)
@@ -96,14 +96,26 @@ def create_subdirectory(directory):
             break
     return subdirectory
 
-def get_first_available_pad(directory):
+def get_first_available_pad_set(directory):
     ''' (String) -> String '''
     for subdirectory in os.listdir(directory):
-        for index_pad in range(100):
-            path = directory + '/' + subdirectory + '/' + str(index_pad).zfill(2)
+        for index_pad_set in range(100):
+            path = directory + '/' + subdirectory + '/' + str(index_pad_set).zfill(2)
             if os.path.isfile(path + 'c'):
                 return path
     return ''
+
+def get_pad_set(directory, prefix, suffix):
+    ''' (String, String, String) -> String '''
+    for subdirectory in os.listdir(directory):
+        for index_pad_set in range(100):
+            path = directory + '/' + subdirectory + '/' + str(index_pad_set).zfill(2)
+            prefix_bis = read_file(path + 'p')
+            suffix_bis = read_file(path + 's')
+            if prefix_bis == prefix and suffix_bis == suffix and os.path.isfile(path + 'c'):
+                return path
+    print('There is no pad matching the prefix and suffix.')
+    exit()
 
 def get_randoms(bytes):
     ''' (int) -> String '''
@@ -159,18 +171,6 @@ def decrypt_message(text_encrypted, pad):
         ascii.append(text_encrypted_array[index]-pad[index])
     text_decrypted = ASCII_to_text(ascii)
     return text_decrypted
-
-def get_pad(directory, prefix, suffix):
-    ''' (String, String, String) -> String '''
-    for subdirectory in os.listdir(directory):
-        for index_pad in range(100):
-            path_pad = directory + '/' + subdirectory + '/' + str(index_pad).zfill(2)
-            prefix_bis = read_file(path_pad + 'p')
-            suffix_bis = read_file(path_pad + 's')
-            if prefix_bis == prefix and suffix_bis == suffix and os.path.isfile(path_pad + 'c'):
-                return path_pad
-    print('There is no pad matching the prefix and suffix.')
-    exit()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Encrypt (write) or Decrypt (read) text in an image.')
