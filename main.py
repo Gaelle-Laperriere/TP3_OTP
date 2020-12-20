@@ -16,10 +16,9 @@ def generate(directory):
       file_s = open(subdirectory + '/' + str(index).zfill(2) + 's', 'wb')
       file_s.write(get_randoms(48))
       file_s.close()
-    return
 
 def send(directory, text):
-    ''' '''
+    ''' (String, String) -> NoneType '''
     # Get all information needed
     path = get_first_available_pad(directory)
     if path == '':
@@ -35,11 +34,25 @@ def send(directory, text):
     file_t.close()
     # Shred
     os.system("shred -vu " + path + 'c')
-    return
 
-def receive(directory):
-    ''' '''
-    return
+def receive(directory, filename):
+    ''' (String) -> NoneType '''
+    # Get content of filename
+    content = read_file(filename)
+    prefix = content[:384]
+    text_encrypted = content[384:-384]
+    suffix = content[-384:]
+    # Decrypt message
+    path = get_pad(directory, prefix, suffix)
+    pad = read_pad(path + 'c')
+    text_decrypted = decrypt_message(text_encrypted, pad)
+    print(text_decrypted)
+    # Write decrypted message
+    """
+    file_m = open(, 'wb')
+    file_m.write(text_decrypted)
+    file_m.close()
+    """
 
 def check_interface_up():
     ''' (NoneType) -> NoneType '''
@@ -87,9 +100,9 @@ def get_first_available_pad(directory):
     ''' (String) -> String '''
     for subdirectory in os.listdir(directory):
         for index_pad in range(100):
-            path_pad = directory + '/' + subdirectory + '/' + str(index_pad).zfill(2)
-            if os.path.isfile(path_pad + 'c'):
-                return path_pad
+            path = directory + '/' + subdirectory + '/' + str(index_pad).zfill(2)
+            if os.path.isfile(path + 'c'):
+                return path
     return ''
 
 def get_randoms(bytes):
@@ -124,9 +137,9 @@ def text_to_ASCII(text):
     ascii = [ord(char) for char in text]  # Get binary ASCII for each character.
     return ascii
 
-def bin_ASCII_to_text(ascii):
+def ASCII_to_text(ascii):
     ''' (array of String) -> String '''
-    text = [chr(int(char, 2)) for char in ascii]  # Get integer values and decode from ASCII.
+    text = [chr(char) for char in ascii]  # Decode from ASCII.
     return ''.join(text)
 
 def encrypt_message(text,path):
@@ -135,8 +148,29 @@ def encrypt_message(text,path):
     ascii = text_to_ASCII(text)
     text_encrypted = []
     for index in range(len(ascii)):
-        text_encrypted.append(bin(ascii[index]+pad[index])[2:].zfill(8))
+        text_encrypted.append(bin(ascii[index]+pad[index])[2:].zfill(9))  # We need to count 9 bits because the maximum value is > 255
     return ''.join(text_encrypted)
+
+def decrypt_message(text_encrypted, pad):
+    ''' (String, String, String) -> String'''
+    text_encrypted_array = [int(text_encrypted[index:index+9], 2) for index in range(0, len(text_encrypted), 9)]
+    ascii = []
+    for index in range(len(text_encrypted_array)):
+        ascii.append(text_encrypted_array[index]-pad[index])
+    text_decrypted = ASCII_to_text(ascii)
+    return text_decrypted
+
+def get_pad(directory, prefix, suffix):
+    ''' (String, String, String) -> String '''
+    for subdirectory in os.listdir(directory):
+        for index_pad in range(100):
+            path_pad = directory + '/' + subdirectory + '/' + str(index_pad).zfill(2)
+            prefix_bis = read_file(path_pad + 'p')
+            suffix_bis = read_file(path_pad + 's')
+            if prefix_bis == prefix and suffix_bis == suffix and os.path.isfile(path_pad + 'c'):
+                return path_pad
+    print('There is no pad matching the prefix and suffix.')
+    exit()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Encrypt (write) or Decrypt (read) text in an image.')
@@ -177,4 +211,4 @@ if __name__ == '__main__':
                 exit()
             send(directory, text)
         elif r:
-            receive(directory)
+            receive(directory, filename)
