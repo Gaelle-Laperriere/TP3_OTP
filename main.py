@@ -60,6 +60,12 @@ def is_interface_up():
                     exit()
         f.close()
 
+def is_encryption_possible(text):
+    ''' (String) -> Boolean '''
+    if len(text)*8 > 16000:
+        return False
+    return True
+
 def get_randoms(bytes):
     ''' (int) -> String '''
     # The following wommented code is very slow
