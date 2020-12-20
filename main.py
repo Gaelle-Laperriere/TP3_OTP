@@ -24,6 +24,7 @@ def send(directory, text):
         print('There is no available pad in the directory "' + directory + '"')
         exit()
     text_encrypted = encrypt_message(text,path)
+
     return
 
 def receive(directory):
@@ -44,13 +45,13 @@ def check_interface_up():
             print('You cannot run this script with a network interface up: ' + interface)
             exit()
         elif 'unknown' in status:
-            user_confirmation = ''
+            user_response = ''
             while True:
                 print('Your network interface ' + interface + ' has an unknown statut.')
-                user_confirmation = input('Is it up ? [yes] or [no] ')
-                if user_confirmation == 'no':
+                user_response = input('Is it up ? [yes] or [no] ')
+                if user_response == 'no':
                     break
-                elif user_confirmation == 'yes':
+                elif user_response == 'yes':
                     print('You cannot run this script with a network interface up: ' + interface)
                     exit()
         f.close()
@@ -124,9 +125,10 @@ def encrypt_message(text,path):
     ''' (String, String) -> String '''
     pad = read_pad(path)
     ascii = text_to_ASCII(text)
+    text_encrypted = []
     for index in range(len(ascii)):
-        ascii[index]+=pad[index]
-    return ascii
+        text_encrypted.append(ascii[index]+pad[index])
+    return text_encrypted
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Encrypt (write) or Decrypt (read) text in an image.')
