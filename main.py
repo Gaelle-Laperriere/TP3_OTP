@@ -24,7 +24,7 @@ def send(directory, text):
     if path == '':
         print('There is no available pad set in the directory "' + directory + '"')
         exit()
-    text_encrypted = encrypt_message(text,path + 'c')
+    text_encrypted = encrypt_message(text, path + 'c')
     prefix = read_file(path + 'p')
     suffix = read_file(path + 's')
     # Write encrypted prefix + text_encrypted + suffix
@@ -33,10 +33,10 @@ def send(directory, text):
     file_t.write(prefix + text_encrypted + suffix)
     file_t.close()
     # Shred
-    os.system("shred -vu " + path + 'c')
+    os.system('shred -vu ' + path + 'c')
 
 def receive(directory, filename):
-    ''' (String) -> NoneType '''
+    ''' (String, String) -> NoneType '''
     # Get content of filename
     content = read_file(filename)
     prefix = content[:384]
@@ -48,11 +48,11 @@ def receive(directory, filename):
     text_decrypted = decrypt_message(text_encrypted, pad)
     print(text_decrypted)
     # Write decrypted message
-    """
+    '''
     file_m = open(, 'wb')
     file_m.write(text_decrypted)
     file_m.close()
-    """
+    '''
 
 def check_interface_up():
     ''' (NoneType) -> NoneType '''
@@ -120,13 +120,13 @@ def get_pad_set(directory, prefix, suffix):
 def get_randoms(bytes):
     ''' (int) -> String '''
     # The following wommented code is very slow
-    """
+    '''
     randoms = []
     file = open('/dev/random', 'rb')
     for x in file.read(bytes):
         randoms.append(bin(ord(x))[2:].zfill(8))
     file.close()
-    """
+    '''
     # urandom use dev/urandom instead of de/random but is much faster !
     randoms = [bin(ord(x))[2:].zfill(8) for x in os.urandom(bytes)]
     return ''.join(randoms)
@@ -150,11 +150,11 @@ def text_to_ASCII(text):
     return ascii
 
 def ASCII_to_text(ascii):
-    ''' (array of String) -> String '''
+    ''' (array of int) -> String '''
     text = [chr(char) for char in ascii]  # Decode from ASCII.
     return ''.join(text)
 
-def encrypt_message(text,path):
+def encrypt_message(text, path):
     ''' (String, String) -> String '''
     pad = read_pad(path)
     ascii = text_to_ASCII(text)
@@ -164,7 +164,7 @@ def encrypt_message(text,path):
     return ''.join(text_encrypted)
 
 def decrypt_message(text_encrypted, pad):
-    ''' (String, String, String) -> String'''
+    ''' (String, array of int) -> String'''
     text_encrypted_array = [int(text_encrypted[index:index+9], 2) for index in range(0, len(text_encrypted), 9)]
     ascii = []
     for index in range(len(text_encrypted_array)):
