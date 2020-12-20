@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 import argparse
 import os
+import sys
 
 def generate(directory):
     ''' (String) -> NoneType '''
@@ -32,6 +33,8 @@ def send(directory, text):
     file_t = open(split[0] + '-' + split[1] + '-' + split[2] + 't', 'wb')
     file_t.write(prefix + text_encrypted + suffix)
     file_t.close()
+    # Shred
+    os.system("shred -vu " + path + 'c')
     return
 
 def receive(directory):
