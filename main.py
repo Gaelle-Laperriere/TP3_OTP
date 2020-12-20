@@ -4,7 +4,7 @@ import os
 
 def generate(directory):
     ''' '''
-    create_subdirectory(directory)
+    subdirectory = create_subdirectory(directory)
     return
 
 def send(directory, text):
@@ -24,6 +24,7 @@ def create_subdirectory(directory):
         if not(os.path.exists(subdirectory)):
             os.mkdir(subdirectory)
             break
+    return subdirectory
 
 def is_interface_up():
     ''' (NoneType) -> NoneType '''
@@ -36,18 +37,27 @@ def is_interface_up():
         f = open(path + interface + '/operstate', 'r')
         status = f.read()
         if 'up' in status:
-            print("You can't run this script with a network interface up")
+            print('You cannot run this script with a network interface up')
             exit()
         elif 'unknown' in status:
             user_confirmation = ''
             while True:
-                user_confirmation = input("Your network interface " + interface + " has an unknown statut. Is it up ? [yes] or [no] ")
+                user_confirmation = input('Your network interface ' + interface + ' has an unknown statut. Is it up ? [yes] or [no] ')
                 if user_confirmation == 'no':
                     break
                 elif user_confirmation == 'yes':
-                    print("You can't run this script with a network interface up")
+                    print('You cannot run this script with a network interface up')
                     exit()
         f.close()
+
+def get_randoms():
+    ''' (NoneType) -> String '''
+    randoms = []
+    f = open('/dev/random', 'rb')
+    for x in f.read(2000):
+        randoms.append(bin(ord(x))[2:].zfill(8))
+    f.close()
+    return ''.join(randoms)
 
 def read_txt(filename):
     ''' (String) -> String '''
