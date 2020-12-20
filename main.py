@@ -19,10 +19,34 @@ def create_subdirectory(directory):
     if not(os.path.exists(directory)):
         os.mkdir(directory)
     for index in range(10000):
-        subdirectory = directory + "/" + str(index).zfill(4)
+        subdirectory = directory + '/' + str(index).zfill(4)
         if not(os.path.exists(subdirectory)):
             os.mkdir(subdirectory)
             break
+
+def is_interface_up():
+    path = '/sys/class/net/'
+    interfaces = []
+    for object in os.listdir(path):
+        if os.path.isdir(path + object):
+            interfaces.append(object)
+    for interface in interfaces:
+        f = open(path + interface + '/operstate', 'r')
+        status = f.read()
+        if 'up' in status:
+            print("You can't run this script with a network interface up")
+            exit()
+        elif 'unknown' in status:
+            user_confirmation = ''
+            while True:
+                user_confirmation = input("Your network interface " + interface + " has an unknown statut. Is it up ? [yes] or [no] ")
+                if user_confirmation == 'no':
+                    break
+                elif user_confirmation == 'yes':
+                    print("You can't run this script with a network interface up")
+                    exit()
+        f.close()
+    return
 
 def read_txt(filename):
     ''' (String) -> String '''
