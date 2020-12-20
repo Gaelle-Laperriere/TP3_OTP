@@ -19,12 +19,19 @@ def generate(directory):
 
 def send(directory, text):
     ''' '''
+    # Get all information needed
     path = get_first_available_pad(directory)
     if path == '':
         print('There is no available pad in the directory "' + directory + '"')
         exit()
-    text_encrypted = encrypt_message(text,path)
-
+    text_encrypted = encrypt_message(text,path + 'c')
+    prefix = read_file(path + 'p')
+    suffix = read_file(path + 's')
+    # Write encrypted prefix + text_encrypted + suffix
+    split = path.split('/')
+    file_t = open(split[0] + '-' + split[1] + '-' + split[2] + 't', 'wb')
+    file_t.write(prefix + text_encrypted + suffix)
+    file_t.close()
     return
 
 def receive(directory):
@@ -39,8 +46,8 @@ def check_interface_up():
         if os.path.isdir(path + object):
             interfaces.append(object)
     for interface in interfaces:
-        f = open(path + interface + '/operstate', 'r')
-        status = f.read()
+        file = open(path + interface + '/operstate', 'r')
+        status = file.read()
         if 'up' in status:
             print('You cannot run this script with a network interface up: ' + interface)
             exit()
@@ -54,7 +61,7 @@ def check_interface_up():
                 elif user_response == 'yes':
                     print('You cannot run this script with a network interface up: ' + interface)
                     exit()
-        f.close()
+        file.close()
 
 def is_encryption_possible(text):
     ''' (String) -> Boolean '''
@@ -87,27 +94,25 @@ def get_randoms(bytes):
     # The following wommented code is very slow
     """
     randoms = []
-    f = open('/dev/random', 'rb')
-    for x in f.read(bytes):
+    file = open('/dev/random', 'rb')
+    for x in file.read(bytes):
         randoms.append(bin(ord(x))[2:].zfill(8))
-    f.close()
+    file.close()
     """
     # urandom use dev/urandom instead of de/random but is much faster !
     randoms = [bin(ord(x))[2:].zfill(8) for x in os.urandom(bytes)]
     return ''.join(randoms)
 
-def read_txt(filename):
+def read_file(path):
     ''' (String) -> String '''
-    file = open(filename, 'r')
+    file = open(path, 'r')
     text = file.read()
     file.close()
     return text
 
 def read_pad(path):
     ''' (String) -> array of int '''
-    f = open(path + 'c', 'rb')
-    pad = f.read()
-    f.close()
+    pad = read_file(path)
     pad_array = [int(pad[index:index+8], 2) for index in range(0, 16000, 8)]  # Separate each pad value.
     return pad_array
 
@@ -127,8 +132,8 @@ def encrypt_message(text,path):
     ascii = text_to_ASCII(text)
     text_encrypted = []
     for index in range(len(ascii)):
-        text_encrypted.append(ascii[index]+pad[index])
-    return text_encrypted
+        text_encrypted.append(bin(ascii[index]+pad[index])[2:].zfill(8))
+    return ''.join(text_encrypted)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Encrypt (write) or Decrypt (read) text in an image.')
@@ -161,7 +166,7 @@ if __name__ == '__main__':
         #check_interface_up()  # TODO uncomment
         if s:
             if filename_send is not None:
-                text = read_txt(filename_send)
+                text = read_file(filename_send)
             elif text is None:
                 text = input('Please enter the message to encrypt: ')
             if not(is_encryption_possible(text)):
