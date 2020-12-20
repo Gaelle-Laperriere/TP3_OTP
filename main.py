@@ -1,8 +1,10 @@
 #-*- coding: utf-8 -*-
 import argparse
+import os
 
 def generate(directory):
     ''' '''
+    create_subdirectory(directory)
     return
 
 def send(directory, text):
@@ -12,6 +14,15 @@ def send(directory, text):
 def receive(directory):
     ''' '''
     return
+
+def create_subdirectory(directory):
+    if not(os.path.exists(directory)):
+        os.mkdir(directory)
+    for index in range(10000):
+        subdirectory = directory + "/" + str(index).zfill(4)
+        if not(os.path.exists(subdirectory)):
+            os.mkdir(subdirectory)
+            break
 
 def read_txt(filename):
     ''' (String) -> String '''
