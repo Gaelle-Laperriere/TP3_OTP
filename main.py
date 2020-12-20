@@ -16,6 +16,7 @@ def receive(directory):
     return
 
 def create_subdirectory(directory):
+    ''' (String) -> NoneType '''
     if not(os.path.exists(directory)):
         os.mkdir(directory)
     for index in range(10000):
@@ -25,6 +26,7 @@ def create_subdirectory(directory):
             break
 
 def is_interface_up():
+    ''' (NoneType) -> NoneType '''
     path = '/sys/class/net/'
     interfaces = []
     for object in os.listdir(path):
@@ -46,7 +48,6 @@ def is_interface_up():
                     print("You can't run this script with a network interface up")
                     exit()
         f.close()
-    return
 
 def read_txt(filename):
     ''' (String) -> String '''
