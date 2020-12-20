@@ -62,11 +62,16 @@ def is_interface_up():
 
 def get_randoms(bytes):
     ''' (int) -> String '''
+    # The following wommented code is very slow
+    """
     randoms = []
     f = open('/dev/random', 'rb')
     for x in f.read(bytes):
         randoms.append(bin(ord(x))[2:].zfill(8))
     f.close()
+    """
+    # urandom use dev/urandom instead of de/random but is much faster !
+    randoms = [bin(ord(x))[2:].zfill(8) for x in os.urandom(bytes)]
     return ''.join(randoms)
 
 def read_txt(filename):
