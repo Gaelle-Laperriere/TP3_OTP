@@ -19,6 +19,11 @@ def generate(directory):
 
 def send(directory, text):
     ''' '''
+    path_pad = get_first_available_pad(directory)
+    if path_pad == '':
+        print('There is no available pad in the directory "' + directory + '"')
+        exit()
+    print(path_pad)
     return
 
 def receive(directory):
@@ -35,6 +40,15 @@ def create_subdirectory(directory):
             os.mkdir(subdirectory)
             break
     return subdirectory
+
+def get_first_available_pad(directory):
+    ''' (String) -> String '''
+    for subdirectory in os.listdir(directory):
+        for index_pad in range(100):
+            path_pad = directory + '/' + subdirectory + '/' + str(index_pad).zfill(2)
+            if os.path.isfile(path_pad + 'c'):
+                return path_pad
+    return ''
 
 def check_interface_up():
     ''' (NoneType) -> NoneType '''
@@ -126,7 +140,7 @@ if __name__ == '__main__':
     if g or (not(s) and not(r)):
         generate(directory)
     else:
-        check_interface_up()
+        #check_interface_up()  # TODO uncomment
         if s:
             if filename_send is not None:
                 text = read_txt(filename_send)
