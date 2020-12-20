@@ -19,36 +19,16 @@ def generate(directory):
 
 def send(directory, text):
     ''' '''
-    path_pad = get_first_available_pad(directory)
-    if path_pad == '':
+    path = get_first_available_pad(directory)
+    if path == '':
         print('There is no available pad in the directory "' + directory + '"')
         exit()
-    print(path_pad)
+    text_encrypted = encrypt_message(text,path)
     return
 
 def receive(directory):
     ''' '''
     return
-
-def create_subdirectory(directory):
-    ''' (String) -> String '''
-    if not(os.path.exists(directory)):
-        os.mkdir(directory)
-    for index in range(10000):
-        subdirectory = directory + '/' + str(index).zfill(4)
-        if not(os.path.exists(subdirectory)):
-            os.mkdir(subdirectory)
-            break
-    return subdirectory
-
-def get_first_available_pad(directory):
-    ''' (String) -> String '''
-    for subdirectory in os.listdir(directory):
-        for index_pad in range(100):
-            path_pad = directory + '/' + subdirectory + '/' + str(index_pad).zfill(2)
-            if os.path.isfile(path_pad + 'c'):
-                return path_pad
-    return ''
 
 def check_interface_up():
     ''' (NoneType) -> NoneType '''
@@ -81,6 +61,26 @@ def is_encryption_possible(text):
         return False
     return True
 
+def create_subdirectory(directory):
+    ''' (String) -> String '''
+    if not(os.path.exists(directory)):
+        os.mkdir(directory)
+    for index in range(10000):
+        subdirectory = directory + '/' + str(index).zfill(4)
+        if not(os.path.exists(subdirectory)):
+            os.mkdir(subdirectory)
+            break
+    return subdirectory
+
+def get_first_available_pad(directory):
+    ''' (String) -> String '''
+    for subdirectory in os.listdir(directory):
+        for index_pad in range(100):
+            path_pad = directory + '/' + subdirectory + '/' + str(index_pad).zfill(2)
+            if os.path.isfile(path_pad + 'c'):
+                return path_pad
+    return ''
+
 def get_randoms(bytes):
     ''' (int) -> String '''
     # The following wommented code is very slow
@@ -102,15 +102,31 @@ def read_txt(filename):
     file.close()
     return text
 
-def text_to_bin_ASCII(text):
-    ''' (String) -> String '''
-    ascii = [bin(ord(char))[2:].zfill(8) for char in text]  # Get binary ASCII for each character.
-    return ''.join(ascii)
+def read_pad(path):
+    ''' (String) -> array of int '''
+    f = open(path + 'c', 'rb')
+    pad = f.read()
+    f.close()
+    pad_array = [int(pad[index:index+8], 2) for index in range(0, 16000, 8)]  # Separate each pad value.
+    return pad_array
+
+def text_to_ASCII(text):
+    ''' (String) -> array of int '''
+    ascii = [ord(char) for char in text]  # Get binary ASCII for each character.
+    return ascii
 
 def bin_ASCII_to_text(ascii):
     ''' (array of String) -> String '''
     text = [chr(int(char, 2)) for char in ascii]  # Get integer values and decode from ASCII.
     return ''.join(text)
+
+def encrypt_message(text,path):
+    ''' (String, String) -> String '''
+    pad = read_pad(path)
+    ascii = text_to_ASCII(text)
+    for index in range(len(ascii)):
+        ascii[index]+=pad[index]
+    return ascii
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Encrypt (write) or Decrypt (read) text in an image.')
