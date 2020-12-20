@@ -36,8 +36,8 @@ def create_subdirectory(directory):
             break
     return subdirectory
 
-def is_interface_up():
-    ''' (NoneType) -> Boolean '''
+def check_interface_up():
+    ''' (NoneType) -> NoneType '''
     path = '/sys/class/net/'
     interfaces = []
     for object in os.listdir(path):
@@ -47,17 +47,19 @@ def is_interface_up():
         f = open(path + interface + '/operstate', 'r')
         status = f.read()
         if 'up' in status:
-            return True
+            print('You cannot run this script with a network interface up: ' + interface)
+            exit()
         elif 'unknown' in status:
             user_confirmation = ''
             while True:
-                user_confirmation = input('Your network interface ' + interface + ' has an unknown statut. Is it up ? [yes] or [no] ')
+                print('Your network interface ' + interface + ' has an unknown statut.')
+                user_confirmation = input('Is it up ? [yes] or [no] ')
                 if user_confirmation == 'no':
                     break
                 elif user_confirmation == 'yes':
-                    return True
+                    print('You cannot run this script with a network interface up: ' + interface)
+                    exit()
         f.close()
-    return False
 
 def is_encryption_possible(text):
     ''' (String) -> Boolean '''
@@ -85,6 +87,16 @@ def read_txt(filename):
     text = file.read()
     file.close()
     return text
+
+def text_to_bin_ASCII(text):
+    ''' (String) -> String '''
+    ascii = [bin(ord(char))[2:].zfill(8) for char in text]  # Get binary ASCII for each character.
+    return ''.join(ascii)
+
+def bin_ASCII_to_text(ascii):
+    ''' (array of String) -> String '''
+    text = [chr(int(char, 2)) for char in ascii]  # Get integer values and decode from ASCII.
+    return ''.join(text)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Encrypt (write) or Decrypt (read) text in an image.')
@@ -114,9 +126,7 @@ if __name__ == '__main__':
     if g or (not(s) and not(r)):
         generate(directory)
     else:
-        if is_interface_up():
-            print('You cannot run this script with a network interface up')
-            exit()
+        check_interface_up()
         if s:
             if filename_send is not None:
                 text = read_txt(filename_send)
