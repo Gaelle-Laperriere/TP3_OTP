@@ -3,8 +3,18 @@ import argparse
 import os
 
 def generate(directory):
-    ''' '''
+    ''' (String) -> NoneType '''
     subdirectory = create_subdirectory(directory)
+    for index in range(100):
+      file_c = open(subdirectory + '/' + str(index).zfill(2) + 'c', 'wb')
+      file_c.write(get_randoms(2000))
+      file_c.close()
+      file_p = open(subdirectory + '/' + str(index).zfill(2) + 'p', 'wb')
+      file_p.write(get_randoms(48))
+      file_p.close()
+      file_s = open(subdirectory + '/' + str(index).zfill(2) + 's', 'wb')
+      file_s.write(get_randoms(48))
+      file_s.close()
     return
 
 def send(directory, text):
@@ -16,7 +26,7 @@ def receive(directory):
     return
 
 def create_subdirectory(directory):
-    ''' (String) -> NoneType '''
+    ''' (String) -> String '''
     if not(os.path.exists(directory)):
         os.mkdir(directory)
     for index in range(10000):
@@ -50,11 +60,11 @@ def is_interface_up():
                     exit()
         f.close()
 
-def get_randoms():
-    ''' (NoneType) -> String '''
+def get_randoms(bytes):
+    ''' (int) -> String '''
     randoms = []
     f = open('/dev/random', 'rb')
-    for x in f.read(2000):
+    for x in f.read(bytes):
         randoms.append(bin(ord(x))[2:].zfill(8))
     f.close()
     return ''.join(randoms)
