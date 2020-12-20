@@ -37,7 +37,7 @@ def create_subdirectory(directory):
     return subdirectory
 
 def is_interface_up():
-    ''' (NoneType) -> NoneType '''
+    ''' (NoneType) -> Boolean '''
     path = '/sys/class/net/'
     interfaces = []
     for object in os.listdir(path):
@@ -47,8 +47,7 @@ def is_interface_up():
         f = open(path + interface + '/operstate', 'r')
         status = f.read()
         if 'up' in status:
-            print('You cannot run this script with a network interface up')
-            exit()
+            return True
         elif 'unknown' in status:
             user_confirmation = ''
             while True:
@@ -56,13 +55,13 @@ def is_interface_up():
                 if user_confirmation == 'no':
                     break
                 elif user_confirmation == 'yes':
-                    print('You cannot run this script with a network interface up')
-                    exit()
+                    return True
         f.close()
+    return False
 
 def is_encryption_possible(text):
     ''' (String) -> Boolean '''
-    if len(text)*8 > 16000:
+    if len(text) > 2000:
         return False
     return True
 
@@ -114,11 +113,18 @@ if __name__ == '__main__':
 
     if g or (not(s) and not(r)):
         generate(directory)
-    elif s:
-        if filename_send is not None:
-            text = read_txt(filename_send)
-        elif text is None:
-            text = input('Please enter the message to encrypt: ')
-        send(directory, text)
-    elif r:
-        receive(directory)
+    else:
+        if is_interface_up():
+            print('You cannot run this script with a network interface up')
+            exit()
+        if s:
+            if filename_send is not None:
+                text = read_txt(filename_send)
+            elif text is None:
+                text = input('Please enter the message to encrypt: ')
+            if not(is_encryption_possible(text)):
+                print('You cannot encrypt a message that long (>2 000 characters).')
+                exit()
+            send(directory, text)
+        elif r:
+            receive(directory)
