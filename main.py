@@ -25,8 +25,7 @@ def send(directory, text):
     # Get all information needed.
     path = get_first_available_pad_set(directory)
     if path == '':
-        print('There is no available pad set in the directory "' + directory + '"')
-        exit()
+        sys.exit('Error: There is no available pad set in the directory "' + directory + '"')
     text_encrypted = encrypt_message(text, path + 'c')
     prefix = read_file(path + 'p')
     suffix = read_file(path + 's')
@@ -70,8 +69,7 @@ def check_interface_up():
         file = open(path + interface + '/operstate', 'r')
         status = file.read()
         if 'up' in status:
-            print('You cannot run this script with a network interface up: ' + interface)
-            exit()
+            sys.exit('Error: You cannot run this script with a network interface up: ' + interface)
         elif 'unknown' in status:
             user_response = ''
             # When we don't know if up or down, ask the user.
@@ -81,8 +79,7 @@ def check_interface_up():
                 if user_response == 'no':
                     break
                 elif user_response == 'yes':
-                    print('You cannot run this script with a network interface up: ' + interface)
-                    exit()
+                    sys.exit('Error: You cannot run this script with a network interface up: ' + interface)
         file.close()
 
 def is_encryption_possible(text):
@@ -123,8 +120,7 @@ def get_pad_set(directory, prefix, suffix):
             suffix_bis = read_file(path + 's')
             if prefix_bis == prefix and suffix_bis == suffix and os.path.isfile(path + 'c'):
                 return path
-    print('There is no pad matching the prefix and suffix.')
-    exit()
+    sys.exit('Error: There is no pad matching the prefix and suffix.')
 
 def get_randoms(bytes):
     ''' (int) -> String '''
@@ -203,21 +199,19 @@ if __name__ == '__main__':
     # Check if sending mode and filename not referenced.
     if r and filename == '':
         print('usage: main.py [-h] [-g] [-s] [-r] [-f FILENAME_SEND] [-t TEXT_SEND] directory filename')
-        print('main.py: error: the following arguments are required: filename')
-        exit()
+        sys.exit('main.py: error: the following arguments are required: filename')
 
     if g or (not(s) and not(r)):
         generate(directory)
     else:
-        #check_interface_up()
+        check_interface_up()
         if s:
             if filename_send is not None:
                 text = read_file(filename_send)
             elif text is None:
                 text = input('Please enter the message to encrypt: ')
             if not(is_encryption_possible(text)):
-                print('You cannot encrypt a message that long (>2 000 characters).')
-                exit()
+                sys.exit('Error: You cannot encrypt a message that long (>2 000 characters).')
             send(directory, text)
         elif r:
             receive(directory, filename)
