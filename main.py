@@ -7,19 +7,22 @@ def generate(directory):
     ''' (String) -> NoneType '''
     subdirectory = create_subdirectory(directory)
     for index in range(100):
-      file_c = open(subdirectory + '/' + str(index).zfill(2) + 'c', 'wb')
-      file_c.write(get_randoms(2000))
-      file_c.close()
-      file_p = open(subdirectory + '/' + str(index).zfill(2) + 'p', 'wb')
-      file_p.write(get_randoms(48))
-      file_p.close()
-      file_s = open(subdirectory + '/' + str(index).zfill(2) + 's', 'wb')
-      file_s.write(get_randoms(48))
-      file_s.close()
+        # Pad.
+        file_c = open(subdirectory + '/' + str(index).zfill(2) + 'c', 'wb')
+        file_c.write(get_randoms(2000))
+        file_c.close()
+        # Prefix.
+        file_p = open(subdirectory + '/' + str(index).zfill(2) + 'p', 'wb')
+        file_p.write(get_randoms(48))
+        file_p.close()
+        # Suffix.
+        file_s = open(subdirectory + '/' + str(index).zfill(2) + 's', 'wb')
+        file_s.write(get_randoms(48))
+        file_s.close()
 
 def send(directory, text):
     ''' (String, String) -> NoneType '''
-    # Get all information needed
+    # Get all information needed.
     path = get_first_available_pad_set(directory)
     if path == '':
         print('There is no available pad set in the directory "' + directory + '"')
@@ -27,38 +30,42 @@ def send(directory, text):
     text_encrypted = encrypt_message(text, path + 'c')
     prefix = read_file(path + 'p')
     suffix = read_file(path + 's')
-    # Write encrypted prefix + text_encrypted + suffix
+    # Write encrypted prefix + text_encrypted + suffix.
     split = path.split('/')
     file_t = open(split[0] + '-' + split[1] + '-' + split[2] + 't', 'wb')
     file_t.write(prefix + text_encrypted + suffix)
     file_t.close()
-    # Shred
+    # Shred.
     os.system('shred -vu ' + path + 'c')
 
 def receive(directory, filename):
     ''' (String, String) -> NoneType '''
-    # Get content of filename
+    # Get content of filename.
     content = read_file(filename)
     prefix = content[:384]
     text_encrypted = content[384:-384]
     suffix = content[-384:]
-    # Decrypt message
+    # Decrypt message.
     path = get_pad_set(directory, prefix, suffix)
     pad = read_pad(path + 'c')
     text_decrypted = decrypt_message(text_encrypted, pad)
-    print(text_decrypted)
-    # Write decrypted message
+    # Write decrypted message.
     file_m = open(filename[:-1] + 'm', 'wb')
     file_m.write(text_decrypted)
     file_m.close()
+    # Shred.
+    os.system('shred -vu ' + path + 'c')
+    os.system('shred -vu ' + filename)
 
 def check_interface_up():
     ''' (NoneType) -> NoneType '''
     path = '/sys/class/net/'
+    # Get interfaces.
     interfaces = []
     for object in os.listdir(path):
         if os.path.isdir(path + object):
             interfaces.append(object)
+    # Check if interfaces are up.
     for interface in interfaces:
         file = open(path + interface + '/operstate', 'r')
         status = file.read()
@@ -67,6 +74,7 @@ def check_interface_up():
             exit()
         elif 'unknown' in status:
             user_response = ''
+            # When we don't know if up or down, ask the user.
             while True:
                 print('Your network interface ' + interface + ' has an unknown statut.')
                 user_response = input('Is it up ? [yes] or [no] ')
@@ -85,8 +93,10 @@ def is_encryption_possible(text):
 
 def create_subdirectory(directory):
     ''' (String) -> String '''
+    # Check if the directory already exist, else create it.
     if not(os.path.exists(directory)):
         os.mkdir(directory)
+    # Create the subdirectory. Must be less than 10000.
     for index in range(10000):
         subdirectory = directory + '/' + str(index).zfill(4)
         if not(os.path.exists(subdirectory)):
@@ -108,6 +118,7 @@ def get_pad_set(directory, prefix, suffix):
     for subdirectory in os.listdir(directory):
         for index_pad_set in range(100):
             path = directory + '/' + subdirectory + '/' + str(index_pad_set).zfill(2)
+            # We can double check if the pad set is the good one.
             prefix_bis = read_file(path + 'p')
             suffix_bis = read_file(path + 's')
             if prefix_bis == prefix and suffix_bis == suffix and os.path.isfile(path + 'c'):
@@ -117,7 +128,7 @@ def get_pad_set(directory, prefix, suffix):
 
 def get_randoms(bytes):
     ''' (int) -> String '''
-    # The following wommented code is very slow
+    # The following wommented code is VERY slow (2 hours for one pad set).
     '''
     randoms = []
     file = open('/dev/random', 'rb')
@@ -125,7 +136,7 @@ def get_randoms(bytes):
         randoms.append(bin(ord(x))[2:].zfill(8))
     file.close()
     '''
-    # urandom use dev/urandom instead of de/random but is much faster !
+    # urandom use dev/urandom instead of de/random but is much faster (1 second for all pad sets)!
     randoms = [bin(ord(x))[2:].zfill(8) for x in os.urandom(bytes)]
     return ''.join(randoms)
 
@@ -144,7 +155,7 @@ def read_pad(path):
 
 def text_to_ASCII(text):
     ''' (String) -> array of int '''
-    ascii = [ord(char) for char in text]  # Get binary ASCII for each character.
+    ascii = [ord(char) for char in text]  # Get ASCII for each character.
     return ascii
 
 def ASCII_to_text(ascii):
@@ -198,7 +209,7 @@ if __name__ == '__main__':
     if g or (not(s) and not(r)):
         generate(directory)
     else:
-        #check_interface_up()  # TODO uncomment
+        #check_interface_up()
         if s:
             if filename_send is not None:
                 text = read_file(filename_send)
