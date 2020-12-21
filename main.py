@@ -41,10 +41,10 @@ def send(directory, text):
 def receive(directory, filename):
     ''' (String, String) -> NoneType '''
     # Get content of filename.
-    content = read_file(filename)
-    prefix = content[:384]
-    text_encrypted = content[384:-384]
-    suffix = content[-384:]
+    transmition = read_file(filename)
+    prefix = transmition[:384]
+    text_encrypted = transmition[384:-384]
+    suffix = transmition[-384:]
     # Decrypt message.
     path = get_pad_set(directory, prefix, suffix)
     pad = read_pad(path + 'c')
