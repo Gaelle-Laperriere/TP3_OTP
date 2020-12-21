@@ -48,11 +48,9 @@ def receive(directory, filename):
     text_decrypted = decrypt_message(text_encrypted, pad)
     print(text_decrypted)
     # Write decrypted message
-    '''
-    file_m = open(, 'wb')
+    file_m = open(filename[:-1] + 'm', 'wb')
     file_m.write(text_decrypted)
     file_m.close()
-    '''
 
 def check_interface_up():
     ''' (NoneType) -> NoneType '''
