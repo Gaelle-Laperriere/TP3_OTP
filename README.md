@@ -59,7 +59,7 @@ The text to be encrypted should be specified by one of the three methods:
 - if ``-f filename`` is specified, it will be read from the file filename.
 - If ``-t "text"`` is specified, it will be read from the command line.
 
-Please be carefull with the text written in the command line. Use simple quotes if special characters are used, for more security. The same way, you can use double quotes by adding a space between them and the message (``" text "`` instead of ``"text"``). This problem is due to the Bash command line system, not the program nor the argparse module. If some specific characters are used without those securities, the command line might be badly interpreted by the system itself. 
+Please be carefull with the text written in the command line. If special characters are used, please add a space between the text and the message (``" text "`` instead of ``"text"``), for more security. This problem is due to the Bash command line system, not the program nor the argparse module. If some specific characters are used without those securities, the command line might be badly interpreted by the system itself. 
 
 To encrypt the message, the program will select the first available pad (first time would be the pad ``dir/0000/00c``) and apply the random numbers to the message. Then, it will create a file, named ``dir-0000-00t`` in your current directory, that will contain the entire transmission to give to your receiver. Finally, the program will shred the pad used for transmission (``dir/0000/00c`` of the sender, in this example).
 
