@@ -8,15 +8,15 @@ def generate(directory):
     subdirectory = create_subdirectory(directory)
     for index in range(100):
         # Pad.
-        file_c = open(subdirectory + '/' + str(index).zfill(2) + 'c', 'wb')
+        file_c = open(subdirectory + '/' + str(index).zfill(2) + 'c', 'w')
         file_c.write(get_randoms(2000))
         file_c.close()
         # Prefix.
-        file_p = open(subdirectory + '/' + str(index).zfill(2) + 'p', 'wb')
+        file_p = open(subdirectory + '/' + str(index).zfill(2) + 'p', 'w')
         file_p.write(get_randoms(48))
         file_p.close()
         # Suffix.
-        file_s = open(subdirectory + '/' + str(index).zfill(2) + 's', 'wb')
+        file_s = open(subdirectory + '/' + str(index).zfill(2) + 's', 'w')
         file_s.write(get_randoms(48))
         file_s.close()
 
@@ -31,7 +31,7 @@ def send(directory, text):
     suffix = read_file(path + 's')
     # Write encrypted prefix + text_encrypted + suffix.
     split = path.split('/')
-    file_t = open(split[0] + '-' + split[1] + '-' + split[2] + 't', 'wb')
+    file_t = open(split[0] + '-' + split[1] + '-' + split[2] + 't', 'w')
     file_t.write(prefix + text_encrypted + suffix)
     file_t.close()
     # Shred.
@@ -49,7 +49,7 @@ def receive(directory, filename):
     pad = read_pad(path + 'c')
     text_decrypted = decrypt_message(text_encrypted, pad)
     # Write decrypted message.
-    file_m = open(filename[:-1] + 'm', 'wb')
+    file_m = open(filename[:-1] + 'm', 'w')
     file_m.write(text_decrypted)
     file_m.close()
     # Shred.
@@ -133,7 +133,10 @@ def get_randoms(bytes):
     file.close()
     '''
     # urandom use dev/urandom instead of de/random but is much faster (1 second for all pad sets)!
-    randoms = [bin(ord(x))[2:].zfill(8) for x in os.urandom(bytes)]
+    randoms = []
+    for i in range(bytes):
+    	x = os.urandom(1)
+    	randoms.append(bin(ord(x))[2:].zfill(8))
     return ''.join(randoms)
 
 def read_file(path):
